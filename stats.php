@@ -60,9 +60,7 @@ class stats extends \yii\base\Module {
             return;
         }
         $model = new models\Dailies();
-        $request_type = ($REQUEST->isPjax) ? 'pjax/' :
-                ($REQUEST->isAjax) ? 'ajax/' :
-                ($REQUEST->isConsoleRequest) ? 'console/' : 'normal/';
+        $request_type = (($REQUEST->isPjax) ? 'pjax/' :(($REQUEST->isAjax) ? 'ajax/' :($REQUEST->isConsoleRequest) ? 'console/' : 'normal/'));
         $request_type .= $REQUEST->getMethod();
         $request_type .= ($REQUEST->isFlash) ? '/flash' : '';
         $request_type .= ($REQUEST->isOptions) ? '/options' : '';
