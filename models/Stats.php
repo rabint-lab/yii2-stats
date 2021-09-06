@@ -126,6 +126,7 @@ class Stats extends \yii\db\ActiveRecord
             /* =================================================================== */
             /* ------------------------------------------------------ */
             $analise->visitor = Dailies::find()
+                ->select(['agent'])
                 ->andwhere(['>=', 'time', $tsFrom])
                 ->andwhere(['<', 'time', $tsTo])
                 ->groupBy('agent')
@@ -138,18 +139,19 @@ class Stats extends \yii\db\ActiveRecord
                 ->count();
             /* ------------------------------------------------------ */
             $analise->member_visitor = Dailies::find()
+                ->select('agent')
                 ->andwhere(['>=', 'time', $tsFrom])
                 ->andwhere(['<', 'time', $tsTo])
                 ->andwhere(['>', 'user_id', 0])
                 ->groupBy('agent')
                 ->count();
             /* ------------------------------------------------------ */
-            $analise->post = \app\modules\post\models\Post::find()
-                ->andwhere(['>=', 'created_at', $tsFrom])
-                ->andwhere(['<', 'created_at', $tsTo])
-                ->count();
+//            $analise->post = \app\modules\post\models\Post::find()
+//                ->andwhere(['>=', 'created_at', $tsFrom])
+//                ->andwhere(['<', 'created_at', $tsTo])
+//                ->count();
             /* ------------------------------------------------------ */
-            $analise->user = \globals\direct\User::find()
+            $analise->user = \rabint\user\models\User::find()
                 ->andwhere(['>=', 'created_at', $tsFrom])
                 ->andwhere(['<', 'created_at', $tsTo])
                 ->count();
@@ -164,10 +166,10 @@ class Stats extends \yii\db\ActiveRecord
                 ->andwhere(['<', 'created_at', $tsTo])
                 ->count();
             /* ------------------------------------------------------ */
-            $analise->like = \globals\direct\UserFavorite::find()
-                ->andwhere(['>=', 'created_at', $tsFrom])
-                ->andwhere(['<', 'created_at', $tsTo])
-                ->count();
+//            $analise->like = \globals\direct\UserFavorite::find()
+//                ->andwhere(['>=', 'created_at', $tsFrom])
+//                ->andwhere(['<', 'created_at', $tsTo])
+//                ->count();
             /* ------------------------------------------------------ */
             $analise->download = Dailies::find()
                 ->andwhere(['>=', 'time', $tsFrom])
@@ -210,12 +212,12 @@ class Stats extends \yii\db\ActiveRecord
                 ->select('count(id) as cnt ,maturity')
                 ->orderBy('count(id) desc')
                 ->asArray()->all();
-            $stdMtr = \globals\direct\User::maturites();
-            foreach ($maturity as &$value) {
-                if (isset($stdMtr[$value['maturity']])) {
-                    $value['maturity'] = $stdMtr[$value['maturity']]['shortTitle'];
-                }
-            }
+//            $stdMtr = \globals\direct\User::maturites();
+//            foreach ($maturity as &$value) {
+//                if (isset($stdMtr[$value['maturity']])) {
+//                    $value['maturity'] = $stdMtr[$value['maturity']]['shortTitle'];
+//                }
+//            }
             $analise->maturities = \yii\helpers\ArrayHelper::map($maturity, 'maturity', 'cnt');
             $analise->maturities = var_export($analise->maturities, TRUE);
             /* ------------------------------------------------------ */
@@ -226,14 +228,14 @@ class Stats extends \yii\db\ActiveRecord
                 ->select('count(id) as cnt ,gender')
                 ->orderBy('count(id) desc')
                 ->asArray()->all();
-            $stdGnt = \globals\direct\UserProfile::genders();
-            foreach ($gender as &$value) {
-                if (isset($stdGnt[$value['gender']])) {
-                    $value['gender'] = $stdGnt[$value['gender']]['title'];
-                } else {
-                    $value['gender'] = \Yii::t('rabint', 'نامشخص');
-                }
-            }
+//            $stdGnt = \globals\direct\UserProfile::genders();
+//            foreach ($gender as &$value) {
+//                if (isset($stdGnt[$value['gender']])) {
+//                    $value['gender'] = $stdGnt[$value['gender']]['title'];
+//                } else {
+//                    $value['gender'] = \Yii::t('rabint', 'نامشخص');
+//                }
+//            }
             $analise->genders = \yii\helpers\ArrayHelper::map($gender, 'gender', 'cnt');
             $analise->genders = var_export($analise->genders, TRUE);
             /* ------------------------------------------------------ */
@@ -294,11 +296,11 @@ class Stats extends \yii\db\ActiveRecord
 //        $analise->restricted_ip;
 //        $analise->utms;
 
-            if ($oldAnalise->visit >= $analise->visit) {
-                return FALSE;
-            } else {
-                Stats::deleteAll(['date' => $date]);
-            }
+//            if ($oldAnalise->visit >= $analise->visit) {
+//                return FALSE;
+//            } else {
+//                Stats::deleteAll(['date' => $date]);
+//            }
             if ($analise->save()) {
                 if ($remove_dailies) {
                     static::DailiesToLog($date);
@@ -317,7 +319,7 @@ class Stats extends \yii\db\ActiveRecord
         if (!file_exists($logTarget)) {
             mkdir($logTarget, 0777, TRUE);
         }
-        $fileName = date('W') . '.log';
+        $fileName = date('W') . '.sql';
 
         if (file_exists($logTarget . '/' . $fileName)) {
             unlink($logTarget . '/' . $fileName);
@@ -330,11 +332,8 @@ class Stats extends \yii\db\ActiveRecord
             ->andwhere(['<', 'time', $tsTo])
             ->asArray()->all();
         foreach ($dailies as $row) {
-            $output = date('Y-m-d H:i:s', $row['time']);
-            $output .= ' | ' . $row['request'];
-            $output .= '(' . $row['request_type'] . '=>' . $row['status_code'] . ')';
-            $output .= ' | ' . $row['agent'];
-            $output .= ' | ' . $row['ip'] . '(' . $row['user_id'] . ')' . PHP_EOL;
+            $output = "INSERT INTO `stat_dailies`(`id`, `time`, `user_id`, `maturity`, `gender`, `request`, `status_code`, `agent`, `ip`, `request_type`, `request_params`, `utm`, `referer`)
+            VALUES ('".$row['id']."','".$row['time']."','".$row['user_id']."','".$row['maturity']."','".$row['gender']."','".$row['request']."','".$row['status_code']."','".$row['agent']."','".$row['ip']."','".$row['request_type']."','".$row['request_params']."','".$row['utm']."','".$row['referer']."');". PHP_EOL;
             file_put_contents($logTarget . '/' . $fileName, $output, FILE_APPEND);
         }
         return Dailies::deleteAll(['and', ['>=', 'time', $tsFrom], ['<', 'time', $tsTo]]);

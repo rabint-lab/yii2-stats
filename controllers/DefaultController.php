@@ -38,11 +38,20 @@ class DefaultController extends \rabint\controllers\DefaultController {
             die('Analyse is disabled!');
         }
         $ch = date('H');
-        if ($analiseHour != $ch) {
-            die('invalid request!');
+//        if ($analiseHour != $ch) {
+//            die('invalid request!');
+//        }
+        $file_dir = Yii::getAlias('@app/runtime').'/keyStorage.php';
+        $data = [];
+        if(file_exists($file_dir)){
+            $data = include Yii::getAlias('@app/runtime').'/keyStorage.php';
+        }else{
+            file_put_contents($file_dir,'<?php return '.var_export(['Stats.AnalyseStatus'=>date('Y-m-d H:i:s')]).";");
+            chmod($file_dir, 0777);
+            $data = include Yii::getAlias('@app/runtime').'/keyStorage.php';
         }
-
-        $status = Yii::$app->keyStorage->get('Stats.AnalyseStatus');
+        $data = is_array($data)?$data:[];
+        $status = $data['Stats.AnalyseStatus']??"";
         if ($status == 'doing') {
             die('Analyse already started!');
         }
@@ -51,12 +60,14 @@ class DefaultController extends \rabint\controllers\DefaultController {
         if ($analise != null) {
             die('Analyse for this day are ended!');
         }
-        Yii::$app->keyStorage->set('Stats.AnalyseStatus', 'doing');
-        \rabint\general::startObToKeepProcessing();
-        echo 'analyse started.';
-        \rabint\general::endObAndKeepProcessing();
+        file_put_contents($file_dir,'<?php return '.var_export(array_merge(['Stats.AnalyseStatus'=>'doing'],$data)).";");
+//        Yii::$app->keyStorage->set('Stats.AnalyseStatus', 'doing');
+//        \rabint\helpers\process::startObToKeepProcessing();
+//        echo 'analyse started.';
+//        \rabint\helpers\process::endObAndKeepProcessing();
         Stats::analyse($analiseDate);
-        Yii::$app->keyStorage->set('Stats.AnalyseStatus', date('Y-m-d H:i:s'));
+        file_put_contents($file_dir,'<?php return '.var_export(array_merge(['Stats.AnalyseStatus'=>date('Y-m-d H:i:s')],$data)).";");
+//        Yii::$app->keyStorage->set('Stats.AnalyseStatus', date('Y-m-d H:i:s'));
         die('end');
     }
 

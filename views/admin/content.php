@@ -6,10 +6,10 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model rabint\stats\models\Stats */
 
-$this->title = $model->date;
+//$this->title = $model->date;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('rabint', 'آمار'), 'url' => ['review']];
 $this->params['breadcrumbs'][] = ['label' => Yii::t('rabint', 'تعداد مطال'), 'url' => ['index']];
-$this->params['breadcrumbs'][] = $this->title;
+//$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="view-box stats-view">
     <div class="clearfix"></div>
@@ -49,7 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     [
 //                                                    'user_id' => $model->id,
                                                     ]
-                                            )->andWhere(['>=', 'created_at', (time() - cheatsheet\Time::SECONDS_IN_A_MONTH)])
+                                            )->andWhere(['>=', 'created_at', (time() - \rabint\cheatsheet\Time::SECONDS_IN_A_MONTH)])
                                             ->count("*");
                                     ?>
                                 </span>
@@ -66,7 +66,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     [
 //                                                    'user_id' => $model->id,
                                                     ]
-                                            )->andWhere(['>=', 'created_at', (time() - cheatsheet\Time::SECONDS_IN_A_WEEK)])
+                                            )->andWhere(['>=', 'created_at', (time() - \rabint\cheatsheet\Time::SECONDS_IN_A_WEEK)])
                                             ->count("*");
 //                                echo $res->createCommand()->rawSql;
                                     ?>
@@ -83,7 +83,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                     [
 //                                                    'user_id' => $model->id,
                                                     ]
-                                            )->andWhere(['>=', 'created_at', (time() - cheatsheet\Time::SECONDS_IN_A_DAY)])
+                                            )->andWhere(['>=', 'created_at', (time() - \rabint\cheatsheet\Time::SECONDS_IN_A_DAY)])
                                             ->count("*");
 //                                echo $res->createCommand()->rawSql;
                                     ?>
@@ -118,12 +118,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             ?>
                             <div class="form-group pull-right float-right">
                                 <label> <?= Yii::t('rabint', 'از تاریخ') ?> </label>
-                                <?php echo \rabint\widget::datePickerStatic("from", $from); ?>
+                                <?php echo \rabint\helpers\widget::datePickerStatic("from", $from); ?>
                             </div>
                             <div class="pull-right float-right">&nbsp;&nbsp;&nbsp;</div>
                             <div class="form-group pull-right float-right">
                                 <label> <?= Yii::t('rabint', 'تا تاریخ') ?> </label>
-                                <?php echo \rabint\widget::datePickerStatic("to", $to); ?>
+                                <?php echo \rabint\helpers\widget::datePickerStatic("to", $to); ?>
                             </div>
                             <div class="pull-right float-right">&nbsp;&nbsp;&nbsp;</div>
                             <div class="form-group pull-right float-right">
@@ -143,11 +143,11 @@ $this->params['breadcrumbs'][] = $this->title;
                         $stime = $etime = NULL;
                         $qStr = " ( 1=1 ";
                         if (!empty($from)) {
-                            $stime = \rabint\locality::jalaliToTimestamp($from);
+                            $stime = \rabint\helpers\locality::jalaliToTimestamp($from);
                             $qStr .= " AND  created_at >= " . $stime;
                         }
                         if (!empty($to)) {
-                            $etime = \rabint\locality::jalaliToTimestamp($to);
+                            $etime = \rabint\helpers\locality::jalaliToTimestamp($to);
                             $qStr .= " AND  created_at <= " . $etime;
                         }
                         $qStr .= " ) ";
