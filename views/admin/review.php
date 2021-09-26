@@ -47,12 +47,6 @@ $todateTo = $todateFrom + 86400;
                                                         ->count());
                                         ?></span></td>
                                 <td class="center"><span class="badge bg-red"><?php
-                                        var_dump(Dailies::find()
-                                            ->select('agent')
-                                            ->andwhere(['>=', 'time', $todateFrom])
-                                            ->andwhere(['<', 'time', $todateTo])
-                                            ->groupBy('agent')
-                                            ->count());
                                         echo number_format(Dailies::find()
                                                         ->select('agent')
                                                         ->andwhere(['>=', 'time', $todateFrom])

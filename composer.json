@@ -11,7 +11,8 @@
         }
     ],
     "require": {
-        "rabint/base": "*"
+        "rabint/base": "*",
+        "2amigos/yii2-chartjs-widget" : "~2.0"
     },
     "autoload": {
         "psr-4": {
