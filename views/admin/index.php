@@ -41,7 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //                                'format' => 'raw',
 //                            ],
                             'id',
-                            'date',
+//                            'date',
                                 [
                                 'attribute' => 'date',
                                 'value' => function ($model) {
@@ -53,11 +53,35 @@ $this->params['breadcrumbs'][] = $this->title;
 //                            'most_hour:ntext',
                             // 'visit_in_hour:ntext',
                             // 'interface:ntext',
-                            'post',
+                            [
+                                'attribute' => 'post',
+                                'value' => function ($model) {
+                                    /** @var $model \rabint\stats\models\Stats */
+                                    $start = strtotime($model->date);
+                                    $end = strtotime($model->date) + 86400;
+                                    return \app\modules\post\models\Post::find()
+                                        ->Andwhere(['<','created_at',$start])
+                                        ->Andwhere(['>','created_at',$end])
+                                        ->count();
+                                    },
+                            ],
                             'user',
                             'download',
                             'comment',
-                            'like',
+                            [
+                                'attribute' => 'like',
+                                'value' => function ($model) {
+                                    /** @var $model \rabint\stats\models\Stats */
+                                    $start = strtotime($model->date);
+                                    $end = strtotime($model->date) + 86400;
+                                    return \app\modules\interest\models\InterestMain::find()
+                                        ->Andwhere(['=','model',\app\modules\post\models\Post::class])
+                                        ->Andwhere(['=','rank','1'])
+                                        ->Andwhere(['<','created_at',$start])
+                                        ->Andwhere(['>','created_at',$end])
+                                        ->count();
+                                },
+                            ],
 //                             'rate',
                             // 'most_visited_action:ntext',
                             // 'most_visitor_user:ntext',
