@@ -47,7 +47,14 @@ $todateTo = $todateFrom + 86400;
                                                         ->count());
                                         ?></span></td>
                                 <td class="center"><span class="badge bg-red"><?php
+                                        var_dump(Dailies::find()
+                                            ->select('agent')
+                                            ->andwhere(['>=', 'time', $todateFrom])
+                                            ->andwhere(['<', 'time', $todateTo])
+                                            ->groupBy('agent')
+                                            ->count());
                                         echo number_format(Dailies::find()
+                                                        ->select('agent')
                                                         ->andwhere(['>=', 'time', $todateFrom])
                                                         ->andwhere(['<', 'time', $todateTo])
                                                         ->groupBy('agent')
@@ -181,13 +188,13 @@ $todateTo = $todateFrom + 86400;
                         'type' => 'line',
                         'data' => [
                             'labels' => [
-                                \rabint\locality::jdate('l-j F', strtotime('-7 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-6 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-5 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-4 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-3 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-2 day')),
-                                \rabint\locality::jdate('l-j F', strtotime('-1 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-7 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-6 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-5 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-4 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-3 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-2 day')),
+                                \rabint\helpers\locality::jdate('l-j F', strtotime('-1 day')),
                             ],
                             'datasets' =>
                                 [
