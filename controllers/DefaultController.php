@@ -44,11 +44,11 @@ class DefaultController extends \rabint\controllers\DefaultController {
         $file_dir = Yii::getAlias('@app/runtime').'/keyStorage.php';
         $data = [];
         if(file_exists($file_dir)){
-            $data = include Yii::getAlias('@app/runtime').'/keyStorage.php';
+            $data = json_decode($file_dir,true);
         }else{
-            file_put_contents($file_dir,'<?php return '.var_export(['Stats.AnalyseStatus'=>date('Y-m-d H:i:s')]).";");
+            file_put_contents($file_dir,json_encode(['Stats.AnalyseStatus'=>date('Y-m-d H:i:s')]));
             chmod($file_dir, 0777);
-            $data = include Yii::getAlias('@app/runtime').'/keyStorage.php';
+            $data = json_decode($file_dir,true);
         }
         $data = is_array($data)?$data:[];
         $status = $data['Stats.AnalyseStatus']??"";

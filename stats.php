@@ -3,6 +3,7 @@
 namespace rabint\stats;
 
 use Yii;
+use yii\db\Exception;
 
 class stats extends \yii\base\Module {
 
@@ -12,29 +13,54 @@ class stats extends \yii\base\Module {
         parent::init();
     }
 
+    public static function keyStorageGet($key){
+        $file_dir = Yii::getAlias('@app/runtime').'/keyStorage.json';
+        if(!file_exists($file_dir))
+            file_put_contents($file_dir,'{}');
+        $data = json_decode($file_dir,true) ;
+        return isset($data[$key])?:'';
+    }
+    public static function keyStorageSet($key,$vlaue){
+        $file_dir = Yii::getAlias('@app/runtime').'/keyStorage.json';
+        if(!file_exists($file_dir))
+            file_put_contents($file_dir,'{}');
+        $data = json_decode($file_dir,true);
+        $data[$key]=$vlaue;
+        file_put_contents($file_dir,json_encode($data));
+        chmod($file_dir, 0777);
+        return true;
+    }
+
     public static function analiseStats() {
 	ignore_user_abort();
 	set_time_limit(300);
-        $status = Yii::$app->keyStorage->get('Stats.AnalyseAllStatus');
+        $status = self::keyStorageGet('Stats.AnalyseAllStatus');
         if ($status == 'doing') {
             return 'Analyse already started!';
         }
-        Yii::$app->keyStorage->set('Stats.AnalyseAllStatus', 'doing');
+        self::keyStorageSet('Stats.AnalyseAllStatus', 'doing');
         $tsTo = strtotime(date('Y-m-d 00:00:00'));
-        $allDates = models\Dailies::find()
-                        ->andwhere(['<', 'time', $tsTo])
-                        ->select(new \yii\db\Expression('DISTINCT(DATE( FROM_UNIXTIME( time ) )) as date'))
-            ->orderBy(["time"=>SORT_DESC])
-//            ->limit()
-            ->column();
+        $sql = <<<SQL
+        SELECT DISTINCT date from (
+            SELECT (DATE( FROM_UNIXTIME( time ) )) as date FROM `stat_dailies` WHERE `time` < 1632601800 ORDER BY `time` DESC
+        ) a
+SQL;
+
+        $allDates = \Yii::$app->db->createCommand($sql)->queryAll();
+//        $allDates = models\Dailies::find()
+//                        ->andwhere(['<', 'time', $tsTo])
+//                        ->select(new \yii\db\Expression('DISTINCT(DATE( FROM_UNIXTIME( time ) )) as date'))
+//            ->orderBy(["time"=>SORT_DESC])
+////            ->limit()
+//            ->column();
         if (empty($allDates)) {
-            Yii::$app->keyStorage->set('Stats.AnalyseAllStatus', 'done');
+            self::keyStorageSet('Stats.AnalyseAllStatus', 'done');
             return 'no date for analyse.';
         }
         //todo add time tracing
         $start = microtime(true);
         $total = count($allDates);
-        \rabint\general::simpleOutputProgress($k,$total,"start analyse.");
+        \rabint\helpers\process::simpleOutputProgress(0,$total,"start analyse.");
         foreach ($allDates as $k=>$date) {
             if ($date == date('Y-m-d')) {
                 continue;
@@ -45,10 +71,10 @@ class stats extends \yii\base\Module {
             if($time_elapsed_secs>250){
                 break;
             }
-            \rabint\general::simpleOutputProgress($k+1,$total,"done analyse date: ".$date);
-            Yii::$app->keyStorage->set('Stats.AnalyseAllStatus', 'doing-'.$date);
+            \rabint\helpers\process::simpleOutputProgress($k+1,$total,"done analyse date: ".$date['date']);
+            self::keyStorageSet('Stats.AnalyseAllStatus', 'doing-'.$date['date']);
         }
-        Yii::$app->keyStorage->set('Stats.AnalyseAllStatus', 'done');
+        self::keyStorageSet('Stats.AnalyseAllStatus', 'done');
         return 'analise All done!';
     }
 

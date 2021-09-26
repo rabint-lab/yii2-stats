@@ -45,7 +45,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 [
                                 'attribute' => 'date',
                                 'value' => function ($model) {
-                                    return \rabint\locality::jdate('j F Y', $model->date);
+                                    return \rabint\helpers\locality::jdate('j F Y', $model->date);
                                 },
                             ],
                             'visit',
