@@ -18,7 +18,7 @@ class StatsSearch extends Stats {
     public function rules() {
         return [
                 [['id', 'visit', 'visitor', 'post', 'user', 'download', 'comment', 'like', 'rate', 'error', 'restricted'], 'integer'],
-                [['date', 'most_hour', 'visit_in_hour', 'interface', 'most_visited_action', 'most_visitor_user', 'agents', 'referer', 'restricted_ip', 'utms'], 'safe'],
+                [['date','post', 'most_hour', 'visit_in_hour', 'interface', 'most_visited_action', 'most_visitor_user', 'agents', 'referer', 'restricted_ip', 'utms'], 'safe'],
         ];
     }
 
