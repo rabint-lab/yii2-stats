@@ -309,6 +309,7 @@ class Stats extends \yii\db\ActiveRecord
             }
             return FALSE;
         } catch (\Exception $e) {
+            var_dump($e);exit();
             //todo loging
         }
     }
