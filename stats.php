@@ -42,7 +42,7 @@ class stats extends \yii\base\Module {
         $tsTo = strtotime(date('Y-m-d 00:00:00'));
         $sql = <<<SQL
         SELECT DISTINCT date from (
-            SELECT (DATE( FROM_UNIXTIME( time ) )) as date FROM `stat_dailies` WHERE `time` < 1632601800 ORDER BY `time` DESC
+            SELECT (DATE( FROM_UNIXTIME( time ) )) as date FROM `stat_dailies` WHERE `time` < NOW() ORDER BY `time` DESC
         ) a
 SQL;
 
@@ -62,10 +62,10 @@ SQL;
         $total = count($allDates);
         \rabint\helpers\process::simpleOutputProgress(0,$total,"start analyse.");
         foreach ($allDates as $k=>$date) {
-            if ($date == date('Y-m-d')) {
+            if ($date['date'] == date('Y-m-d')) {
                 continue;
             }
-            models\Stats::analyse($date);
+            models\Stats::analyse($date['date']);
             //todo add time tracing
             $time_elapsed_secs = microtime(true) - $start;
             if($time_elapsed_secs>250){
