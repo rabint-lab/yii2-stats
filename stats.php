@@ -117,7 +117,7 @@ SQL;
             'items' => [
                     ['label' => Yii::t('rabint', 'چکیده'), 'url' => ['/stats/admin/review'], 'icon' => '<i class="far fa-circle"></i>'],
                     ['label' => Yii::t('rabint', 'آمار به تفکیک روز'), 'url' => ['/stats/admin/index'], 'icon' => '<i class="far fa-circle"></i>'],
-                    ['label' => Yii::t('rabint', 'آمار تعداد مطالب'), 'url' => ['/stats/admin/content'], 'icon' => '<i class="far fa-circle"></i>'],
+                    //['label' => Yii::t('rabint', 'آمار تعداد مطالب'), 'url' => ['/stats/admin/content'], 'icon' => '<i class="far fa-circle"></i>'],
             ]
         ];
     }
