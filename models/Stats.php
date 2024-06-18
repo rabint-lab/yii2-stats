@@ -2,6 +2,7 @@
 
 namespace rabint\stats\models;
 
+use app\modules\post\models\Post;
 use Yii;
 
 /**
@@ -34,6 +35,7 @@ use Yii;
  * @property integer $restricted
  * @property string $restricted_ip
  * @property string $utms
+ * @property string $meta
  */
 class Stats extends \yii\db\ActiveRecord
 {
@@ -54,7 +56,7 @@ class Stats extends \yii\db\ActiveRecord
         return [
             [['id', 'visit', 'visitor', 'member_visit', 'member_visitor', 'post', 'user', 'download', 'comment', 'like', 'rate', 'error', 'restricted'], 'integer'],
             [['date'], 'safe'],
-            [['genders', 'maturities', 'most_hour', 'visit_in_hour', 'interface', 'countries', 'most_error_action', 'most_visited_action', 'most_visitor_user', 'agents', 'referer', 'restricted_ip', 'utms'], 'string'],
+            [['genders', 'maturities', 'most_hour', 'visit_in_hour', 'interface', 'countries', 'most_error_action', 'most_visited_action', 'most_visitor_user', 'agents', 'referer', 'restricted_ip', 'utms', 'meta'], 'string'],
         ];
     }
 
@@ -91,6 +93,7 @@ class Stats extends \yii\db\ActiveRecord
             'restricted' => Yii::t('rabint', 'تعداد جلوگیری شده'),
             'restricted_ip' => Yii::t('rabint', 'Ip های متخلف'),
             'utms' => Yii::t('rabint', 'utms'),
+            'meta' => Yii::t('rabint', 'متا'),
         ];
     }
 
@@ -98,14 +101,13 @@ class Stats extends \yii\db\ActiveRecord
     {
         try {
 
-            /**
-             * remove today analised record(if exist)
-             */
-            $oldAnalise = Stats::findOne(['date' => $date]);
-
             $tsFrom = strtotime($date . ' 00:00:00');
             $tsTo = $tsFrom + 86400;
-            $analise = new Stats();
+
+            $analise = Stats::findOne(['date' => $date]);
+            if ($analise == null) {
+                $analise = new Stats();
+            }
             $analise->date = $date;
             /* ------------------------------------------------------ */
             $analise->visit = Dailies::find()
@@ -146,10 +148,10 @@ class Stats extends \yii\db\ActiveRecord
                 ->groupBy('agent')
                 ->count();
             /* ------------------------------------------------------ */
-//            $analise->post = \app\modules\post\models\Post::find()
-//                ->andwhere(['>=', 'created_at', $tsFrom])
-//                ->andwhere(['<', 'created_at', $tsTo])
-//                ->count();
+            $analise->post = Post::find()
+                ->andwhere(['>=', 'created_at', $tsFrom])
+                ->andwhere(['<', 'created_at', $tsTo])
+                ->count();
             /* ------------------------------------------------------ */
             $analise->user = \rabint\user\models\User::find()
                 ->andwhere(['>=', 'created_at', $tsFrom])
@@ -192,7 +194,7 @@ class Stats extends \yii\db\ActiveRecord
                 ->orderBy('count(user_id) desc')
                 ->limit('20')
                 ->column();
-            $analise->most_visitor_user = implode(', ', $analise->most_visitor_user);
+            $analise->most_visitor_user = json_encode($analise->most_visitor_user);
             /* ------------------------------------------------------ */
             $hour_visit = Dailies::find()
                 ->andwhere(['>=', 'time', $tsFrom])
@@ -201,9 +203,9 @@ class Stats extends \yii\db\ActiveRecord
                 ->select('count(id) as cnt ,HOUR(FROM_UNIXTIME(`time`)) as `hour`')
                 ->orderBy('count(id) desc')
                 ->asArray()->all();
-            $analise->most_hour = $hour_visit[0]['hour'];
+            $analise->most_hour = json_encode($hour_visit[0]['hour']);
             $analise->visit_in_hour = \yii\helpers\ArrayHelper::map($hour_visit, 'hour', 'cnt');
-            $analise->visit_in_hour = var_export($analise->visit_in_hour, TRUE);
+            $analise->visit_in_hour = json_encode($analise->visit_in_hour);
             /* ------------------------------------------------------ */
             $maturity = Dailies::find()
                 ->andwhere(['>=', 'time', $tsFrom])
@@ -219,7 +221,7 @@ class Stats extends \yii\db\ActiveRecord
 //                }
 //            }
             $analise->maturities = \yii\helpers\ArrayHelper::map($maturity, 'maturity', 'cnt');
-            $analise->maturities = var_export($analise->maturities, TRUE);
+            $analise->maturities = json_encode($analise->maturities);
             /* ------------------------------------------------------ */
             $gender = Dailies::find()
                 ->andwhere(['>=', 'time', $tsFrom])
@@ -237,7 +239,7 @@ class Stats extends \yii\db\ActiveRecord
 //                }
 //            }
             $analise->genders = \yii\helpers\ArrayHelper::map($gender, 'gender', 'cnt');
-            $analise->genders = var_export($analise->genders, TRUE);
+            $analise->genders = json_encode($analise->genders);
             /* ------------------------------------------------------ */
             /* ------------------------------------------------------ */
             $details = Dailies::find()
@@ -284,11 +286,11 @@ class Stats extends \yii\db\ActiveRecord
             arsort($actions);
             arsort($err_actions);
 
-            $analise->interface = var_export($platforms, true);
-            $analise->agents = var_export($agents, true);
-            $analise->referer = var_export($referers, true);
-            $analise->most_visited_action = var_export($actions, true);
-            $analise->most_error_action = var_export($err_actions, true);
+            $analise->interface = json_encode($platforms);
+            $analise->agents = json_encode($agents);
+            $analise->referer = json_encode($referers);
+            $analise->most_visited_action = json_encode($actions);
+            $analise->most_error_action = json_encode($err_actions);
 
             /* ------------------------------------------------------ */
 //        $analise->countries;
@@ -309,13 +311,16 @@ class Stats extends \yii\db\ActiveRecord
             }
             return FALSE;
         } catch (\Exception $e) {
-            var_dump($e);exit();
+            var_dump($e);
+            exit();
             //todo loging
         }
     }
 
     static function DailiesToLog($date)
     {
+        //disable remove stats dailies !!!
+        return;
         $logTarget = \Yii::getAlias('@app/runtime/logs/visits') . '/' . date('Y');
         if (!file_exists($logTarget)) {
             mkdir($logTarget, 0777, TRUE);
@@ -334,7 +339,7 @@ class Stats extends \yii\db\ActiveRecord
             ->asArray()->all();
         foreach ($dailies as $row) {
             $output = "INSERT INTO `stat_dailies`(`id`, `time`, `user_id`, `maturity`, `gender`, `request`, `status_code`, `agent`, `ip`, `request_type`, `request_params`, `utm`, `referer`)
-            VALUES ('".$row['id']."','".$row['time']."','".$row['user_id']."','".$row['maturity']."','".$row['gender']."','".$row['request']."','".$row['status_code']."','".$row['agent']."','".$row['ip']."','".$row['request_type']."','".$row['request_params']."','".$row['utm']."','".$row['referer']."');". PHP_EOL;
+            VALUES ('" . $row['id'] . "','" . $row['time'] . "','" . $row['user_id'] . "','" . $row['maturity'] . "','" . $row['gender'] . "','" . $row['request'] . "','" . $row['status_code'] . "','" . $row['agent'] . "','" . $row['ip'] . "','" . $row['request_type'] . "','" . $row['request_params'] . "','" . $row['utm'] . "','" . $row['referer'] . "');" . PHP_EOL;
             file_put_contents($logTarget . '/' . $fileName, $output, FILE_APPEND);
         }
         return Dailies::deleteAll(['and', ['>=', 'time', $tsFrom], ['<', 'time', $tsTo]]);

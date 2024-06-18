@@ -17,6 +17,10 @@ use Yii;
  * @property string $ip
  * @property string $request_type
  * @property string $utm
+ * @property int $group_id
+ * @property int $group_category_id
+ * @property string $model
+ * @property string $object_id
  * @property string $referer
  */
 class Dailies extends \yii\db\ActiveRecord {
@@ -34,7 +38,7 @@ class Dailies extends \yii\db\ActiveRecord {
     public function rules() {
         return [
                 [['time'], 'safe'],
-                [['user_id', 'status_code', 'gender', 'maturity'], 'integer'],
+                [['user_id', 'status_code', 'gender', 'maturity','group','group_category'], 'integer'],
                 [['agent', 'utm'], 'string', 'max' => 255],
                 [['request'], 'string', 'max' => 255],
                 [['ip'], 'string', 'max' => 45],
@@ -60,6 +64,8 @@ class Dailies extends \yii\db\ActiveRecord {
             'request_type' => \Yii::t('rabint', 'نوع درخواست'),
             'utm' => \Yii::t('rabint', 'utm'),
             'referer' => \Yii::t('rabint', 'referer'),
+            'group' => \Yii::t('rabint', 'گروه'),
+            'group_category' => \Yii::t('rabint', 'زیر گروه'),
             'status_code' => \Yii::t('rabint', 'status_code'),
         ];
     }

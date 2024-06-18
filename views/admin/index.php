@@ -23,8 +23,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 <?= Html::beginForm(['bulk'], 'post'); ?>
                 <div class="box-body">
                     <p>
-                        <?= Html::a(Yii::t('rabint', 'تحلیل آمار امروز'), ['/stats/default/today-analyse'], ['class' => 'btn btn-success']) ?>
-                        <?= Html::a(Yii::t('rabint', 'تحلیل روز های انجام نشده'), ['/stats/default/analyse-all'], ['class' => 'btn btn-warning']) ?>
+                        <?= Html::a(Yii::t('rabint', 'تحلیل آمار امروز'), ['/stats/default/today-analyse'], ['target' => '_BLANK', 'class' => 'btn btn-success']) ?>
+                        <?= Html::a(Yii::t('rabint', 'تحلیل روز های انجام نشده'), ['/stats/default/analyse-all'], ['target' => '_BLANK', 'class' => 'btn btn-warning']) ?>
+                        <?= Html::a(Yii::t('rabint', 'تحلیل کل روز ها'), ['/stats/default/analyse-all', 'total' => 1], ['target' => '_BLANK', 'class' => 'btn btn-danger']) ?>
                     </p>
 
                     <?=
@@ -33,7 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'dataProvider' => $dataProvider,
                         'filterModel' => $searchModel,
                         'columns' => [
-                                ['class' => 'yii\grid\CheckboxColumn'],
+                            ['class' => 'yii\grid\CheckboxColumn'],
                             //['class' => 'yii\grid\SerialColumn'],
 //                            [
 //                                'attribute' => 'id',
@@ -42,7 +43,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //                            ],
                             'id',
 //                            'date',
-                                [
+                            [
                                 'attribute' => 'date',
                                 'value' => function ($model) {
                                     return \rabint\helpers\locality::jdate('j F Y', $model->date);
@@ -50,38 +51,27 @@ $this->params['breadcrumbs'][] = $this->title;
                             ],
                             'visit',
                             'visitor',
-//                            'most_hour:ntext',
+                            'post',
+                            'most_hour',
                             // 'visit_in_hour:ntext',
                             // 'interface:ntext',
-                            [
-                                'attribute' => 'post',
-                                'value' => function ($model) {
-                                    /** @var $model \rabint\stats\models\Stats */
-                                    $start = strtotime($model->date);
-                                    $end = strtotime($model->date) + 86400;
-                                    return \app\modules\post\models\Post::find()
-                                        ->Andwhere(['<','created_at',$start])
-                                        ->Andwhere(['>','created_at',$end])
-                                        ->count();
-                                    },
-                            ],
                             'user',
                             'download',
                             'comment',
-                            [
-                                'attribute' => 'like',
-                                'value' => function ($model) {
-                                    /** @var $model \rabint\stats\models\Stats */
-                                    $start = strtotime($model->date);
-                                    $end = strtotime($model->date) + 86400;
-                                    return \app\modules\interest\models\InterestMain::find()
-                                        ->Andwhere(['=','model',\app\modules\post\models\Post::class])
-                                        ->Andwhere(['=','rank','1'])
-                                        ->Andwhere(['<','created_at',$start])
-                                        ->Andwhere(['>','created_at',$end])
-                                        ->count();
-                                },
-                            ],
+//                            [
+//                                'attribute' => 'like',
+//                                'value' => function ($model) {
+//                                    /** @var $model \rabint\stats\models\Stats */
+//                                    $start = strtotime($model->date);
+//                                    $end = strtotime($model->date) + 86400;
+//                                    return \app\modules\interest\models\InterestMain::find()
+//                                        ->Andwhere(['=','model',\app\modules\post\models\Post::class])
+//                                        ->Andwhere(['=','rank','1'])
+//                                        ->Andwhere(['<','created_at',$start])
+//                                        ->Andwhere(['>','created_at',$end])
+//                                        ->count();
+//                                },
+//                            ],
 //                             'rate',
                             // 'most_visited_action:ntext',
                             // 'most_visitor_user:ntext',
@@ -97,7 +87,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                     'view' => function ($url, $model) {
                                         $url = \Yii::$app->urlManager->createUrl(['/stats/admin/view', 'date' => $model->date]);
                                         return Html::a('<span class="glyphicon glyphicon-eye-open"></span>', $url, [
-                                                    'title' => Yii::t('rabint', 'نمایش ')]);
+                                            'title' => Yii::t('rabint', 'نمایش ')]);
                                     },
                                 ],
                             ],
@@ -106,7 +96,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ?>
 
                 </div>
-                <?= Html::endForm(); ?> 
+                <?= Html::endForm(); ?>
             </div>
         </div>
     </div>
